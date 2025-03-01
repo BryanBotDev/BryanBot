@@ -1,0 +1,93 @@
+{
+    "_comment": "DO NOT EDIT: FILE GENERATED AUTOMATICALLY BY PTERODACTYL PANEL - PTERODACTYL.IO",
+    "meta": {
+        "version": "PTDL_v2",
+        "update_url": null
+    },
+    "exported_at": "2025-03-01T18:53:24+01:00",
+    "name": "BryanBot",
+    "author": "szymon.dawid@gmail.com",
+    "description": null,
+    "features": null,
+    "docker_images": {
+        "Node.js LTS": "ghcr.io\/parkervcp\/yolks:nodejs_22",
+        "Node.js Latest": "ghcr.io\/parkervcp\/yolks:nodejs_23"
+    },
+    "file_denylist": [],
+    "startup": "if [[ -d .git ]] && [[ {{AUTO_UPDATE}} == \"1\" ]]; then git pull; fi; if [[ ! -z ${NODE_PACKAGES} ]]; then \/usr\/local\/bin\/npm install ${NODE_PACKAGES}; fi; if [ -f \/home\/container\/package.json ]; then \/usr\/local\/bin\/npm install; fi; \/usr\/local\/bin\/node \/home\/container\/{{BOT_JS_FILE}} {{STARTUP_FLAGS}}",
+    "config": {
+        "files": "{}",
+        "startup": "{\r\n    \"done\": \"is ready to use!\"\r\n}",
+        "logs": "{}",
+        "stop": "^C^C"
+    },
+    "scripts": {
+        "installation": {
+            "script": "#!\/bin\/bash\r\n# BryanBot Installation Script\r\n# Server Files: \/mnt\/server\r\n\r\n# Set BryanBot github repo url\r\nGIT_ADDRESS=\"https:\/\/github.com\/BryanBotDev\/BryanBot.git\"\r\n\r\n# Install dependencies\r\napt update\r\napt install -y git curl jq file unzip make gcc g++ python3 python-dev libtool\r\n\r\nmkdir -p \/mnt\/server\r\ncd \/mnt\/server\r\n\r\nif [ -z \"${USERNAME}\" ] && [ -z \"${ACCESS_TOKEN}\" ]; then\r\n    echo -e \"Using anonymous git account\"\r\nelse\r\n    GIT_ADDRESS=\"https:\/\/${USERNAME}:${ACCESS_TOKEN}@$(echo -e ${GIT_ADDRESS} | cut -d\/ -f3-)\"\r\nfi\r\n\r\n## Pull BryanBot files\r\nif [ \"$(ls -A \/mnt\/server)\" ]; then\r\n    echo -e \"\/mnt\/server directory is not empty.\"\r\n    if [ -d .git ]; then\r\n        echo -e \"Found .git directory\"\r\n        if [ -f .git\/config ]; then\r\n            echo -e \"Loading info from git config\"\r\n            ORIGIN=$(git config --get remote.origin.url)\r\n        else\r\n            echo -e \"Files found with no git config\"\r\n            echo -e \"Closing out without touching things to not break anything\"\r\n            exit 10\r\n        fi\r\n    fi\r\n\r\n    if [ \"${ORIGIN}\" == \"${GIT_ADDRESS}\" ]; then\r\n        echo \"Pulling latest release from GitHub\"\r\n        git pull\r\n    fi\r\nelse\r\n    echo -e \"Cloning stable branch\"\r\n    git clone -b stable ${GIT_ADDRESS} .\r\nfi\r\n\r\necho \"Installing Node.js packages\"\r\nif [[ ! -z ${NODE_PACKAGES} ]]; then\r\n    \/usr\/local\/bin\/npm install ${NODE_PACKAGES}\r\nfi\r\n\r\nif [ -f \/mnt\/server\/package.json ]; then\r\n    \/usr\/local\/bin\/npm install\r\nfi\r\n\r\necho -e \"Install complete\"\r\nexit 0",
+            "container": "node:18-buster-slim",
+            "entrypoint": "bash"
+        }
+    },
+    "variables": [
+        {
+            "name": "Auto Update BrayanBot",
+            "description": "Pull the latest files from BrayanBot's Github",
+            "env_variable": "AUTO_UPDATE",
+            "default_value": "1",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|boolean",
+            "field_type": "text"
+        },
+        {
+            "name": "Additional Node packages",
+            "description": "Install additional node packages. Use spaces to separate.",
+            "env_variable": "NODE_PACKAGES",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string",
+            "field_type": "text"
+        },
+        {
+            "name": "GitHub Username",
+            "description": "Username to auth with GitHub.",
+            "env_variable": "USERNAME",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string",
+            "field_type": "text"
+        },
+        {
+            "name": "GitHub Access Token",
+            "description": "Password to use with GitHub.\r\n\r\nIt's best practice to use a Personal Access Token.\r\nhttps:\/\/github.com\/settings\/tokens",
+            "env_variable": "ACCESS_TOKEN",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string",
+            "field_type": "text"
+        },
+        {
+            "name": "Main bot file",
+            "description": "The file that starts the bot.",
+            "env_variable": "BOT_JS_FILE",
+            "default_value": "src\/index.js",
+            "user_viewable": true,
+            "user_editable": false,
+            "rules": "required|string",
+            "field_type": "text"
+        },
+        {
+            "name": "Startup Parameters",
+            "description": "",
+            "env_variable": "STARTUP_FLAGS",
+            "default_value": "--show-errors --reset-slashCommands",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string",
+            "field_type": "text"
+        }
+    ]
+}
