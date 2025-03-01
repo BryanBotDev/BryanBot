@@ -29,6 +29,7 @@ jobs:
         with:
           name: "BryanBot v${{ steps.vars.outputs.version }}"
           prerelease: false
+          draft: true
           files: |
             BryanBot-*.zip
             pterodactyl-egg.json
