@@ -8,7 +8,7 @@ const LangType = {
   TagEmbed: SetupMessage,
   Presets: {
     Error: SetupMessage,
-    CommandError: SetupMessage
+    CommandError: SetupMessage,
   },
   General: {
     Info: {
@@ -18,6 +18,7 @@ const LangType = {
       InvalidUsage: SetupMessage,
     },
     Help: {
+      InvalidUsage: SetupMessage,
       AutoCompleteCategory: {
         [String]: String,
       },
@@ -47,21 +48,22 @@ const defaultConfig = {
           Color: "#ef1e13",
           Footer: "{brand-name} Error Handler",
           FooterIcon: "{brand-logo}",
-          Timestamp: true
-        }
-      ]
+          Timestamp: true,
+        },
+      ],
     },
     CommandError: {
       Embeds: [
         {
-          Description: "### There was a problem executing this command.\n{error}",
+          Description:
+            "### There was a problem executing this command.\n{error}",
           Color: "#ef1e13",
           Footer: "{brand-name} Error Handler",
           FooterIcon: "{brand-logo}",
-          Timestamp: true
-        }
-      ]
-    }
+          Timestamp: true,
+        },
+      ],
+    },
   },
   TagEmbed: {
     Embeds: [
@@ -106,21 +108,20 @@ const defaultConfig = {
             {
               Name: "📥 Input",
               Value: "```js\n{input}```",
-              Inline: false
+              Inline: false,
             },
             {
               Name: "📤 Output",
               Value: "```js\n{output}```",
-              Inline: false
-            }
+              Inline: false,
+            },
           ],
           Footer: "{brand-name} | Secure Execution",
           FooterIcon: "{brand-logo}",
-          Timestamp: true
-        }
-      ]
-      
-    }
+          Timestamp: true,
+        },
+      ],
+    },
   },
   General: {
     Info: {
@@ -278,6 +279,25 @@ const defaultConfig = {
       },
     },
     Help: {
+      InvalidUsage: {
+        Embeds: [
+          {
+            Author: "{brand-name} | Invalid Usage",
+            AuthorIcon: "{brand-logo}",
+            Description:
+              "> {user-mention}, you have to specify a valid type of information to show. Valid types are: `category` and `command`.",
+            Fields: [
+              {
+                Name: "• Usage",
+                Value: "> `{prefixUsed}help <category/command> [parameter]`",
+              },
+            ],
+            FooterIcon: "{user-pfp}",
+            Footer: "{user-tag}",
+            Timestamp: true,
+          },
+        ],
+      },
       AutoCompleteCategory: {
         General: "General Commands 🌏",
       },
