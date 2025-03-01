@@ -10,36 +10,26 @@ jobs:
     name: Public Release
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4
 
-        # Set Variables
       - name: Set variables
         id: vars
         run: echo ::set-output name=version::${GITHUB_REF#refs/tags/v}
 
-        # Zip up necessary files
       - name: Archive Source code
-        run: zip -r BryanBot-v${{ steps.vars.outputs.version }}.zip * -x Dockerfile docker-compose.yml Dockerignore
+        run: zip -r BryanBot-v${{ steps.vars.outputs.version }}.zip * -x Dockerfile docker-compose.yml
 
-        # Fetch the pterodactyl egg
-      - name: Receive Pterodactyl Egg
-        run: wget -O pterodactyl-egg.json https://cdn.zorino.in/egg-bryanbot-bot.json
-
-        # Generate checksums for all files and log them to the appropriate file
       - name: Generate Checksums
         run: |
-          md5sum BryanBot-v${{ steps.vars.outputs.version }}.zip pterodactyl-egg.json Dockerfile docker-compose.yml .dockerignore > md5-checksums.txt
-          sha256sum BryanBot-v${{ steps.vars.outputs.version }}.zip pterodactyl-egg.json Dockerfile docker-compose.yml .dockerignore > sha256-checksums.txt
-          sha512sum BryanBot-v${{ steps.vars.outputs.version }}.zip pterodactyl-egg.json Dockerfile docker-compose.yml .dockerignore > sha512-checksums.txt
-      # Release Public Build
-      - uses: "marvinpinto/action-automatic-releases@latest"
+          md5sum BryanBot-v${{ steps.vars.outputs.version }}.zip pterodactyl-egg.json > md5-checksums.txt
+          sha256sum BryanBot-v${{ steps.vars.outputs.version }}.zip pterodactyl-egg.json > sha256-checksums.txt
+          sha512sum BryanBot-v${{ steps.vars.outputs.version }}.zip pterodactyl-egg.json > sha512-checksums.txt
+
+      - uses: "softprops/action-gh-release@v2"
         with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          name: "BryanBot v${{ steps.vars.outputs.version }}"
           prerelease: false
-          title: "BryanBot v${{ steps.vars.outputs.version }}"
           files: |
             BryanBot-*.zip
             pterodactyl-egg.json
-            Dockerfile
-            docker-compose.yml
             *-checksums.txt

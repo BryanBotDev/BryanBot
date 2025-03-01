@@ -3,82 +3,73 @@
 name: Node.js CI
 
 on:
-    push:
-        paths-ignore:
-            - 'README.md'
-            - '.github/**'
-            - '.dockerignore'
-            - 'docker-compose.yml'
-            - 'Dockerfile'
-        branches: 
-            - main
-    pull_request:
-        paths-ignore:
-            - 'README.md'
-            - '.github/**'
-            - '.dockerignore'
-            - 'docker-compose.yml'
-            - 'Dockerfile'
-        branches: 
-            - main
-    schedule:
-        # execute once every monday
-        - cron: "0 0 * * MON"
+  push:
+    paths-ignore:
+      - "README.md"
+      - ".github/**"
+      - ".dockerignore"
+      - "docker-compose.yml"
+      - "Dockerfile"
+    branches:
+      - dev
+  schedule:
+    # execute once every monday
+    - cron: "0 0 * * 1"
 
 jobs:
-    build:
-        runs-on: ubuntu-latest
-        steps:
-            - name: Checkout repository
-              uses: actions/checkout@v2
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-            - name: Install Node v16
-              uses: actions/setup-node@v2
-              with:
-                  node-version: 16
-                  
-            - uses: pnpm/action-setup@v2
-              name: Install pnpm
-              id: pnpm-install
-              with:
-                  version: 7
-                  run_install: false
+      - name: Install Node v22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
 
-            - name: Get pnpm store directory
-              id: pnpm-cache
-              shell: bash
-              run: |
-                echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+      - uses: pnpm/action-setup@v4
+        name: Install pnpm
+        id: pnpm-install
+        with:
+          version: 10
+          run_install: false
 
-            - uses: actions/cache@v3
-              name: Setup pnpm cache
-              with:
-                  path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
-                  key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-                  restore-keys: |
-                    ${{ runner.os }}-pnpm-store-
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
 
-            - name: Install dependencies
-              run: pnpm install
-    analyze:
-        name: Analyze
-        runs-on: ubuntu-latest
-        permissions:
-            actions: read
-            contents: read
-            security-events: write
-        strategy:
-            fail-fast: false
-            matrix:
-                language: ["javascript"]
-        steps:
-            - name: Checkout repository
-              uses: actions/checkout@v2
-            - name: Initialize CodeQL
-              uses: github/codeql-action/init@v1
-              with:
-                  languages: ${{ matrix.language }}
-            - name: Autobuild
-              uses: github/codeql-action/autobuild@v1
-            - name: Perform CodeQL Analysis
-              uses: github/codeql-action/analyze@v1
+      - uses: actions/cache@v4
+        name: Setup pnpm cache
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install
+  analyze:
+    name: Analyze
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ["javascript"]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
