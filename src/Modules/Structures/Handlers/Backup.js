@@ -40,7 +40,6 @@ export class BackupHandler {
       setInterval(() => {
         this.takeBackup()
           .then(([result, output]) => {
-            console.log(output);
             if (result)
               this.manager.logger.debug(
                 `${prefix} Backup completed successfully. ${chalk.green(
