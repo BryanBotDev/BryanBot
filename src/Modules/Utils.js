@@ -12,8 +12,12 @@ const formatColor = function (string) {
     const processNestedColors = (input) => {
         const regex = /(\w+|#[0-9A-Fa-f]{3,6})\{([^{}]*)\}/g;
         let hasNestedMatch = false;
+        if (input === null || input === undefined) {
+            return "Invalid input: " + input;
+        }
         if (typeof input !== "string") {
-            throw new Error(`Expected a string, but received: ${typeof input}`);
+            if (typeof input === "object") input = JSON.stringify(input, "", 2);
+            else return `Invalid input type: expected string, received ${typeof input}`;
         }
         const formattedString = input.replace(regex, (match, color, text) => {
             hasNestedMatch = true;
@@ -45,7 +49,7 @@ function isHexColor(color) {
 }
 
 export default {
-    logger: { 
+    logger: {
         debug: (...text) => process.argv.includes("--debug") && console.log(chalk.magentaBright.bold("[DEBUG]"), ...text.map(x => formatColor(x))),
         info: (...text) => console.log(chalk.greenBright.bold("[INFO]"), ...text.map(x => formatColor(x))),
         warn: (...text) => console.log(chalk.yellowBright.bold("[WARN]"), ...text.map(x => formatColor(x))),
@@ -61,7 +65,7 @@ export default {
     setupMessage: setupMessage,
     setupSlashCommand: setupSlashCommand,
     setupModal: setupModal,
-    
+
     createVariable: createVariable,
     botVariables: botVariables,
     userVariables: userVariables,
