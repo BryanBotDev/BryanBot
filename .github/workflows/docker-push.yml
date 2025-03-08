@@ -3,31 +3,20 @@ name: Docker Image CI
 
 on:
   push:
-    paths-ignore:
-      - ".github/**"
-      - ".dockerignore"
-      - "docker-compose.yml"
-      - "Dockerfile"
-    tags:
-      - v*
-    branches:
-      - main
   pull_request:
-    paths-ignore:
-      - ".github/**"
-      - ".dockerignore"
-      - "docker-compose.yml"
-      - "Dockerfile"
-    branches:
-      - main
+  workflow_dispatch:
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        arch: [x86_64] # more can be added here, if necessary
+
     steps:
       # Checkout to the git repository
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # Logs into Docker using the credientals from the repository secrets
       - name: Login to Docker Hub
@@ -36,16 +25,16 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # Docker builds now require buildx
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+      - name: Build Docker image
+        run: |
+          nix build .#packages.${{ matrix.arch }}-linux.docker
 
-      # build the image using the provided Dockerfile
-      # and push them to Dockerhub
-      - name: Build and push
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          file: ./Dockerfile
-          push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/bryanbot:latest
+      - name: Load and preview Docker image
+        run: |
+          docker load < result &&
+          docker images
+
+      - name: Push Docker image
+        run: |
+          docker tag ${{ secrets.DOCKER_HUB_USERNAME }}/${{ secrets.DOCKER_HUB_REPO }}:latest ${{ secrets.DOCKER_HUB_USERNAME }}/${{ secrets.DOCKER_HUB_REPO }}:${{ matrix.arch }}-latest
+          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/${{ secrets.DOCKER_HUB_REPO }}:${{ matrix.arch }}-latest
