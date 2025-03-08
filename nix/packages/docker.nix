@@ -1,18 +1,21 @@
 {
+  self,
   dockerTools,
   buildEnv,
+  nodejs,
   ...
 }: let
   name = "node";
   tag = "current-alpine";
   digest = "sha256:b2f1e6d2f9eaf82afc910ec1e3b14f2a252be3f91e661602017974dee1bd9f40";
 
+  # TODO: we can stick all of this into a "manifest" in JSON and update it with nix-prefetch-docker
   baseImage = dockerTools.pullImage {
     imageName = name;
     imageDigest = digest;
-    finalImageName = "${name}-${tag}";
+    finalImageName = name;
     finalImageTag = tag;
-    sha256 = "sha256-veOOSIFG+nIfGV5Wv8k325S1sniyFSdzSYbKJvZsVpg=";
+    sha256 = "sha256-nk6QCkQQe7Ms0ZJjDqEz9U7fXnydnaRJj5nam3hTGq4=";
   };
 in
   dockerTools.buildImage {
@@ -29,9 +32,20 @@ in
 
     copyToRoot = buildEnv {
       name = "image-root";
-      paths = [];
-
-      # Makes package executables available to us
-      pathsToLink = ["/bin"];
+      paths = [nodejs self];
+      pathsToLink = ["/bin" "/src"];
     };
+
+    config = {
+      Cmd = ["node" "/src/index.js"];
+      WorkingDir = "/data";
+      Volumes = {
+        "/data" = {};
+      };
+
+      ExposedPorts = {};
+    };
+
+    diskSize = 1024;
+    buildVMMemorySize = 512;
   }

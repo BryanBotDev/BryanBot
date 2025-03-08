@@ -1,6 +1,6 @@
 {
   description = "Bryanbot";
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs?ref=nixos-unstable";
 
   outputs = {
     self,
@@ -9,11 +9,11 @@
   }: let
     systems = ["x86_64-linux" "aarch64-linux"];
     forEachSystem = nixpkgs.lib.genAttrs systems;
-
     pkgsForEach = nixpkgs.legacyPackages;
   in {
     packages = forEachSystem (system: {
-      docker = pkgsForEach.${system}.callPackage ./nix/packages/docker.nix {};
+      docker = pkgsForEach.${system}.callPackage ./nix/packages/docker.nix {inherit self;};
+      bryanbot = pkgsForEach.${system}.callPackage ./nix/packages/bryanbot.nix {};
     });
 
     devShells = forEachSystem (system: {
